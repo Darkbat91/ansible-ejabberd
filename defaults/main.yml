@@ -1,0 +1,22 @@
+---
+ejabberd_url: https://www.process-one.net/downloads/downloads-action.php?file=/21.07/ejabberd-21.07-0.x86_64.rpm
+ejabberd_version: '21.07'
+ejabberd_domain: 'example.com'
+
+loglevel: 4
+
+chat_domain: example.com
+
+chat_admins:
+  - admin@example.com
+
+### System user and group
+ejabberd_manage_user: true
+ejabberd_user: "ejabberd"
+ejabberd_manage_group: false
+ejabberd_group: "ejabberd"
+ejabberd_home: /opt/ejabberd
+# This can not be /sbin/nologin due to
+
+required_packages:
+  - mariadb         # Needed to bootstrap database

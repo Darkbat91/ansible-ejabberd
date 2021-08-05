@@ -1,0 +1,76 @@
+---
+- name: Ejabberd | Install | Download software
+  ansible.builtin.get_url:
+    url: "{{ ejabberd_url }}"
+    dest: /tmp/ej.rpm
+
+- name: Ejabberd | Install | Install RPM
+  yum:
+    name: /tmp/ej.rpm
+    state: present
+  register: rpm_update
+
+- name: Ejabberd | Install | Enable Service
+  ansible.builtin.copy:
+    src: "/opt/ejabberd-{{ ejabberd_version }}/bin/ejabberd.service"
+    dest: "/etc/systemd/system/ejabberd.service"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: true
+  become: true
+  notify: daemon_reload
+
+- name: Ejabberd | Install | Bootstrap db
+  ansible.builtin.shell: >
+      mysql -D {{ mysql.database }}
+      --user={{ mysql.user }}@{{ mysql.server }} --password={{ mysql.password }}
+      -h {{ mysql.server }} <
+      /opt/ejabberd-{{ ejabberd_version }}/lib/ejabberd-{{ ejabberd_version }}/priv/sql/mysql.sql
+  become: true
+  register: command_result
+  failed_when:
+    - command_result.rc != 0
+    - '"users" not in command_result.stderr'
+  run_once: true
+  # Running one time we could set to host name but doesn't matter much with the failed checks we have
+  when:
+    - mysql is defined
+    - rpm_update.changed
+
+- name: Ejabberd | Install | Deploy Configuration
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dst }}"
+    backup: true
+  with_items:
+    - {src: "opt_ejabberd_conf_ejabberdctl.cfg.j2",
+       dst: "/opt/ejabberd/conf/ejabberdctl.cfg"}
+    - {src: "opt_ejabberd_conf_ejabberd.yml.j2",
+       dst: "/opt/ejabberd/conf/ejabberd.yml"}
+  notify: restart_ejabberd
+
+- name: Ejabberd | Install | Deploy ErlangCookie
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dst }}"
+  with_items:
+    - {src: "opt_ejabberd_erlang.cookie.j2",
+       dst: "/opt/ejabberd/.erlang.cookie"}
+  when: erlang_cookie is defined
+  notify: restart_ejabberd
+
+- name: Remove global read from config Directory
+  ansible.builtin.file:
+    path: /opt/ejabberd/conf
+    state: directory
+    owner: "{{ ejabberd_user }}"
+    group: "{{ ejabberd_group }}"
+    mode: '0750'
+
+- name: Ejabberd | Install | Start Service
+  service:
+    name: ejabberd
+    state: started
+    enabled: true
+    # notify: join_cluster

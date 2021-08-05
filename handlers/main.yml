@@ -1,0 +1,11 @@
+---
+- name: Ejabberd | Handlers | Restart Service
+  service:
+    name: ejabberd
+    state: restarted
+  listen: restart_ejabberd
+
+- name: Ejabberd | Handlers | Reload Systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+  listen: daemon_reload

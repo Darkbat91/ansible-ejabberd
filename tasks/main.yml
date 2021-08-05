@@ -1,0 +1,7 @@
+---
+# File: main.yml - Main tasks for Nomad
+
+# manage the user groups
+- include: user_group.yml
+
+- include: install.yml

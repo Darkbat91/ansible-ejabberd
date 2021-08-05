@@ -1,0 +1,17 @@
+---
+- name: Add ejabberd group
+  ansible.builtin.group:
+    name: "{{ ejabberd_group }}"
+    state: present
+  when:
+    - ejabberd_manage_group | bool
+
+- name: Add ejabberd user
+  ansible.builtin.user:
+    name: "{{ ejabberd_user }}"
+    comment: "Ejabberd user"
+    group: "{{ ejabberd_group }}"
+    home: "{{ ejabberd_home }}"
+    system: true
+  when:
+    - ejabberd_manage_user | bool
