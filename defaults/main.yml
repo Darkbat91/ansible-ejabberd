@@ -13,7 +13,7 @@ chat_admins:
 ### System user and group
 ejabberd_manage_user: true
 ejabberd_user: "ejabberd"
-ejabberd_manage_group: false
+ejabberd_manage_group: true
 ejabberd_group: "ejabberd"
 ejabberd_home: /opt/ejabberd
 # This can not be /sbin/nologin due to
