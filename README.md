@@ -30,6 +30,5 @@ mysql:
 
 There are numerous other options within the [defaults/main.yml](./defaults/main.yml) that can change other parts of the behavior of the system
 
-
 ## Changelog
 The [changelog](./CHANGELOG.md) is stored externally
